@@ -31,6 +31,13 @@ ENV LANG=C.UTF-8
 ENV LC_ALL=C.UTF-8
 
 RUN printf 'export LANG=C.UTF-8\nexport LC_ALL=C.UTF-8\n' > /etc/profile.d/locale.sh
+
+# Download and unzip the latest Blueprint release
+RUN wget $(curl -s https://api.github.com/repos/BlueprintFramework/framework/releases/latest | grep 'browser_download_url' | cut -d '"' -f 4) -O blueprint.zip \
+    && unzip -o blueprint.zip -d /app \
+    && touch /.dockerenv \
+    && rm blueprint.zip
+
 # Install yarn and Pterodactyl dependencies, as well as update browserlist
 RUN for i in {1..3}; do \
         npm install -g yarn && \
@@ -40,12 +47,6 @@ RUN for i in {1..3}; do \
         echo "Attempt $i failed! Retrying..." && \
         sleep 10; \
     done
-
-# Download and unzip the latest Blueprint release
-RUN wget $(curl -s https://api.github.com/repos/BlueprintFramework/framework/releases/latest | grep 'browser_download_url' | cut -d '"' -f 4) -O blueprint.zip \
-    && unzip -o blueprint.zip -d /app \
-    && touch /.dockerenv \
-    && rm blueprint.zip
 
 # Required for tput (used in blueprint.sh)
 ENV TERM=xterm
