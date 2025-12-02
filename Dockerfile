@@ -27,6 +27,7 @@ RUN apk update && apk add --no-cache \
     sed \
     musl-locales
 
+SHELL ["/bin/bash", "-c"]
 ENV LANG=C.UTF-8
 ENV LC_ALL=C.UTF-8
 
