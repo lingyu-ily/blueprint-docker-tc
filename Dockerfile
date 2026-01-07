@@ -1,5 +1,5 @@
 ARG VERSION_TAG
-FROM --platform=$TARGETOS/$TARGETARCH ghcr.io/Lingyu-ILY/pterodactyl-panel-tw:${VERSION_TAG}
+FROM --platform=$TARGETOS/$TARGETARCH ghcr.io/lingyu-ily/pterodactyl-panel-tw:${VERSION_TAG}
 
 # Set the Working Directory
 WORKDIR /app
