@@ -15,7 +15,7 @@ jobs:
     name: Build and Push Docker Image
     runs-on: ubuntu-latest
     env:
-      LATEST_VERSION: v1.11.11 # Determines :latest tag
+      LATEST_VERSION: v1.11.11.0 # Determines :latest tag
     strategy:
       fail-fast: false
       matrix:
@@ -43,9 +43,9 @@ jobs:
         shell: bash
         run: |
           if [[ "${{ matrix.version }}" == "${{ env.LATEST_VERSION }}" ]]; then
-            TAGS="ghcr.io/blueprintframework/blueprint:latest,ghcr.io/blueprintframework/blueprint:${{ matrix.version }}"
+            TAGS="ghcr.io/lingyu-ily/blueprint-tw:latest,ghcr.io/lingyu-ily/blueprint-tw:${{ matrix.version }}"
           else
-            TAGS="ghcr.io/blueprintframework/blueprint:${{ matrix.version }}"
+            TAGS="ghcr.io/lingyu-ily/blueprint-tw:${{ matrix.version }}"
           fi
           echo "VERSION_TAG=${{ matrix.version }}" >> $GITHUB_ENV
           echo "TAGS=$TAGS" >> $GITHUB_ENV
