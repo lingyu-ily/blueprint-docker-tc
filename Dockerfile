@@ -1,5 +1,5 @@
 ARG VERSION_TAG
-FROM --platform=$TARGETOS/$TARGETARCH ghcr.io/lingyu-ily/pterodactyl-panel-tw:${VERSION_TAG}
+FROM --platform=$TARGETOS/$TARGETARCH ghcr.io/lingyu-ily/pterodactyl-panel-tc:${VERSION_TAG}
 
 # Set the Working Directory
 WORKDIR /app
@@ -34,7 +34,7 @@ ENV LC_ALL=C.UTF-8
 RUN printf 'export LANG=C.UTF-8\nexport LC_ALL=C.UTF-8\n' > /etc/profile.d/locale.sh
 
 # Download and unzip the latest Blueprint release
-RUN wget "$(curl -s https://api.github.com/repos/lingyu-ily/blueprint-tw/releases/latest | grep 'browser_download_url' | grep 'release.zip' | cut -d '"' -f 4)" -O blueprint.zip \
+RUN wget "$(curl -s https://api.github.com/repos/lingyu-ily/blueprint-tc/releases/latest | grep 'browser_download_url' | grep 'release.zip' | cut -d '"' -f 4)" -O blueprint.zip \
     && unzip -o blueprint.zip -d /app \
     && touch /.dockerenv \
     && rm blueprint.zip

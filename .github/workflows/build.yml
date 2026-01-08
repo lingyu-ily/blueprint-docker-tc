@@ -43,9 +43,9 @@ jobs:
         shell: bash
         run: |
           if [[ "${{ matrix.version }}" == "${{ env.LATEST_VERSION }}" ]]; then
-            TAGS="ghcr.io/lingyu-ily/blueprint-tw:latest,ghcr.io/lingyu-ily/blueprint-tw:${{ matrix.version }}"
+            TAGS="ghcr.io/lingyu-ily/blueprint-tc:latest,ghcr.io/lingyu-ily/blueprint-tc:${{ matrix.version }}"
           else
-            TAGS="ghcr.io/lingyu-ily/blueprint-tw:${{ matrix.version }}"
+            TAGS="ghcr.io/lingyu-ily/blueprint-tc:${{ matrix.version }}"
           fi
           echo "VERSION_TAG=${{ matrix.version }}" >> $GITHUB_ENV
           echo "TAGS=$TAGS" >> $GITHUB_ENV
