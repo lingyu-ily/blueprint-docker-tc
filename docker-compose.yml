@@ -127,7 +127,7 @@ services:
       - pterodactyl_stack
   wings:
     # See https://github.com/Loki-101/cwings for info about cwings
-    image: ghcr.io/loki-101/cwings:v1.11.13
+    image: ghcr.io/loki-101/cwings:v1.12.0
     restart: always
     ports:
       - "${WINGS_PORT}:${WINGS_PORT}"
