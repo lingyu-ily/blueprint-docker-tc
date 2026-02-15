@@ -88,7 +88,7 @@ services:
     networks:
       - pterodactyl_stack
   panel:
-    image: ghcr.io/blueprintframework/blueprint:v1.11.11
+    image: ghcr.io/blueprintframework/blueprint:v1.12.1
     restart: always
     ports:
       - "${PANEL_PORT}:${PANEL_PORT}"
@@ -127,7 +127,7 @@ services:
       - pterodactyl_stack
   wings:
     # See https://github.com/Loki-101/cwings for info about cwings
-    image: ghcr.io/loki-101/cwings:v1.11.13
+    image: ghcr.io/loki-101/cwings:v1.12.1
     restart: always
     ports:
       - "${WINGS_PORT}:${WINGS_PORT}"
@@ -139,6 +139,7 @@ services:
       WINGS_GID: 988
       WINGS_USERNAME: pterodactyl
     volumes:
+      - "/run/wings:/run/wings"
       - "/var/run/docker.sock:/var/run/docker.sock"
       - "/var/lib/docker/containers/:/var/lib/docker/containers/"
       - "${BASE_DIR}/wings/:/etc/pterodactyl"
