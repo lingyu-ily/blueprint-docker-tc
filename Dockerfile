@@ -25,7 +25,8 @@ RUN apk update && apk add --no-cache \
     rsync \
     inotify-tools \
     sed \
-    musl-locales
+    musl-locales \
+    mysql-client
 
 SHELL ["/bin/bash", "-c"]
 ENV LANG=C.UTF-8
