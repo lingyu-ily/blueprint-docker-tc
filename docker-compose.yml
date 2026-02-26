@@ -98,7 +98,7 @@ services:
     volumes:
       - "${BASE_DIR}/var/:/app/var/"
       - "${BASE_DIR}/nginx/:/etc/nginx/http.d/"
-      - "${BASE_DIR}/certs/:/etc/letsencrypt/live:ro"
+      - "${BASE_DIR}/certs/:/etc/letsencrypt/live:ro" # Remove the ":ro" at the end if generating certs automatically
       - "${BASE_DIR}/logs/:/app/storage/logs"
       - "${BASE_DIR}/nginx/logs:/var/log/nginx"
       - "${BASE_DIR}/extensions/:/blueprint_extensions"
@@ -146,7 +146,7 @@ services:
       - "${BASE_DIR}/:${BASE_DIR}/"
       - "${BASE_DIR}/logs/:/var/log/pterodactyl/"
       - "/tmp/pterodactyl/:/tmp/pterodactyl/"
-      - "${BASE_DIR}/certs/:/etc/letsencrypt/live:ro"
+      - "${BASE_DIR}/certs/:/etc/letsencrypt/live:ro" # Remove the ":ro" at the end if generating certs automatically
     healthcheck:
       test: ["CMD", "curl", "http://localhost:${WINGS_PORT}"]
       interval: 30s
