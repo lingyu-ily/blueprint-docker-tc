@@ -16,7 +16,16 @@ x-common:
     APP_TIMEZONE: "${TIMEZONE}"
     APP_SERVICE_AUTHOR: "${EGG_AUTHOR_EMAIL}"
     # Uncomment the line below and set to a non-empty value if you want to use Let's Encrypt
-    # to generate an SSL certificate for the Panel.
+    # to generate an SSL certificate for the Panel. You will also have to open port 80 under
+    # the panel service below. For example, if PANEL_PORT is set to 443, it would look like:
+    # ports:
+    #   - "${PANEL_PORT}:${PANEL_PORT}"
+    #   - "80:80"
+    #
+    # Note that Wings's automatic certificate generation expects port 443 to be open AND LEAD TO THE Wings container; if you're
+    # running both on the same machine, and want to generate certs automatically through this
+    # compose file, you should reuse your panel's cert for this machine's Wings instance instead
+    # of trying to generate both.
     # LE_EMAIL: ""
     # TRUSTED_PROXIES: "${TRUSTED_PROXIES}"
     RECAPTCHA_ENABLED: "${RECAPTCHA_ENABLED}"
@@ -98,7 +107,7 @@ services:
     volumes:
       - "${BASE_DIR}/var/:/app/var/"
       - "${BASE_DIR}/nginx/:/etc/nginx/http.d/"
-      - "${BASE_DIR}/certs/:/etc/letsencrypt/live:ro"
+      - "${BASE_DIR}/certs/:/etc/letsencrypt/live:ro" # Remove the ":ro" at the end if generating certs automatically
       - "${BASE_DIR}/logs/:/app/storage/logs"
       - "${BASE_DIR}/nginx/logs:/var/log/nginx"
       - "${BASE_DIR}/extensions/:/blueprint_extensions"
