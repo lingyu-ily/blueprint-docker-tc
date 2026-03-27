@@ -40,15 +40,12 @@ RUN wget "$(curl -s https://api.github.com/repos/BlueprintFramework/framework/re
     && touch /.dockerenv \
     && rm blueprint.zip
 
-# Install yarn and Pterodactyl dependencies, as well as update browserlist
-RUN for i in {1..3}; do \
-        npm install -g yarn && \
-        yarn --network-timeout 120000 && \
-        npx update-browserslist-db@latest && \
-        break || \
-        echo "Attempt $i failed! Retrying..." && \
-        sleep 10; \
-    done
+# Install dependencies and update browser compatibility data
+RUN retry() { for i in 1 2 3; do "$@" && return || sleep 10; done; exit 1; } && \
+    retry npm install -g yarn && \
+    retry yarn --network-timeout 120000 && \
+    retry npx update-browserslist-db@latest && \
+    retry npm i baseline-browser-mapping@latest -D --legacy-peer-deps
 
 # Required for tput (used in blueprint.sh)
 ENV TERM=xterm
