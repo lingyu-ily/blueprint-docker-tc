@@ -45,7 +45,7 @@ RUN retry() { for i in 1 2 3; do "$@" && return || sleep 10; done; exit 1; } && 
     retry npm install -g yarn && \
     retry yarn --network-timeout 120000 && \
     retry npx update-browserslist-db@latest && \
-    retry npm i baseline-browser-mapping@latest -D --legacy-peer-deps
+    retry yarn add baseline-browser-mapping@latest --dev
 
 # Required for tput (used in blueprint.sh)
 ENV TERM=xterm
