@@ -189,7 +189,7 @@ volumes:
 - Lastly, install your extensions again. You can reinstall all of the extensions in your extensions folder with ``blueprint -i *.blueprint``.
 - If any of your extensions' settings are gone after this step, restore from your backup and ask the author of those extensions where persistent data is stored so you can back it up and restore it after each update.
 
-## Option 3: Update both Blueprint and Pterodactyl Panel WHEN YOU HAVE SET UP THE NONROOT DEVELOPMENT ENVIRONMENT in the previous major section of this README.
+## Option 3: Update both Blueprint and Pterodactyl Panel WHEN YOU HAVE SET UP THE NONROOT DEVELOPMENT ENVIRONMENT in the [previous section](https://github.com/BlueprintFramework/docker#setting-up-a-development-environment) of this README.
 - This guide operates under the assumption that individual extension/theme authors have chosen to store any persistent data such as settings in the database. If they have not done this... there isn't any specific place extension data is meant to be stored, so the data could be anywhere. You'll need to ask them if there is any persistent data stored anywhere that you have to back up before updating.
 - Go to the directory of your docker-compose.yml file
 - ```bash
