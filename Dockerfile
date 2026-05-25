@@ -44,8 +44,7 @@ RUN wget "$(curl -s https://api.github.com/repos/BlueprintFramework/framework/re
 RUN retry() { for i in 1 2 3; do "$@" && return || sleep 10; done; exit 1; } && \
     retry npm install -g yarn && \
     retry yarn --network-timeout 120000 && \
-    retry npx update-browserslist-db@latest && \
-    retry yarn add baseline-browser-mapping@latest --dev
+    retry npx update-browserslist-db@latest
 
 # Required for tput (used in blueprint.sh)
 ENV TERM=xterm
