@@ -11,7 +11,9 @@
 | AMD64        | :white_check_mark: 已支援   |
 | ARM64        | :white_check_mark: 已支援   |
 
-- 注意：雖然提供的面板和 Wings 映像檔可以在 Arm64 上正常運行，但大多數遊戲伺服器_無法_運行，因此如果你在 Arm64 機器上運行 Wings，需要注意這一點。
+- Things you should be aware of before reading this guide:
+  - 雖然提供的面板和 Wings 映像檔可以在 Arm64 上正常運行，但大多數遊戲伺服器 _無法_ 運行，因此如果你在 Arm64 機器上運行 Wings，需要注意這一點。
+  - In all of these examples, ``/srv/pterodactyl`` is used as the base directory. If you set a different value for BASE_DIR in your .env file, use that path instead.
 - 如果在 Raspberry Pi 上運行 Wings，請參閱 quintenqvd 在 Pterodactyl Discord 中發布的以下內容：
   > 在 Pi 4 或 5 上運行 Wings
   > Wings 需要 docker cgroups。這些在 Ubuntu 版本中不存在，只存在於 Debian 11 或 12 中
@@ -133,6 +135,30 @@ rm -rf /var/lib/docker/volumes/pterodactyl_app/_data/.[!.]* /var/lib/docker/volu
 restic restore 46adb587 -r /srv/backups/pterodactyl -t /var/lib/docker/volumes/pterodactyl_app/_data
 docker compose -f /srv/pterodactyl/docker-compose.yml up -d
 ```
+# Setting up a Development Environment
+## If logged in as the root user
+- ``ln -s /var/lib/docker/volumes/pterodactyl_app/_data /srv/pterodactyl/webroot``
+## If logged in as a non-root user
+- If you have already started the panel, stop it and clear the volume before starting: ``docker compose down -v panel``
+- Make sure your filesystem supports ACL and that you have it installed. ``setfacl -v`` should give you an output.
+- Set permissions (assumes you're logged in as the nonroot user you want to use): ``sudo setfacl -R -m u:$USER:rwx,d:u:$USER:rwx /srv/pterodactyl/``
+- Create the webroot folder: ``mkdir -p /srv/pterodactyl/webroot``
+- Replace the section at the bottom of your compose file,
+```
+volumes:
+  app:
+```
+with this new section:
+```
+volumes:
+  app:
+    driver: local
+    driver_opts:
+      type: none
+      o: bind
+      device: ${BASE_DIR}/webroot
+```
+- Bring the panel up: ``docker compose up -d``
 
 # 在 Docker 中更新 Blueprint
 - 記住，在更新之前一定要[建立備份](<https://github.com/BlueprintFramework/docker?tab=readme-ov-file#first-well-install-restic-to-handle-backups>)
@@ -163,7 +189,32 @@ docker compose -f /srv/pterodactyl/docker-compose.yml up -d
 - 最後，再次安裝你的擴充套件。你可以使用 ``blueprint -i *.blueprint`` 重新安裝 extensions 資料夾中的所有擴充套件。
 - 如果在此步驟後任何擴充套件的設定消失了，請從備份還原並詢問這些擴充套件的作者持久資料儲存在哪裡，這樣你就可以在每次更新後備份並還原它。
 
-
+## Option 3: Update both Blueprint and Pterodactyl Panel WHEN YOU HAVE SET UP THE NONROOT DEVELOPMENT ENVIRONMENT in the [previous section](https://github.com/BlueprintFramework/docker#setting-up-a-development-environment) of this README.
+- This guide operates under the assumption that individual extension/theme authors have chosen to store any persistent data such as settings in the database. If they have not done this... there isn't any specific place extension data is meant to be stored, so the data could be anywhere. You'll need to ask them if there is any persistent data stored anywhere that you have to back up before updating.
+- Go to the directory of your docker-compose.yml file
+- ```bash
+    docker compose down
+  ```
+- ```bash
+    mv webroot webroot.bak_$(date +%m-%d-%Y)
+  ```
+- ```bash
+    mkdir webroot
+  ```
+- ```bash
+    docker compose down -v
+  ```
+- The -v tells it to delete any named volumes, i.e. the app volume we use. It will not delete data from bind-mounts. This way the new image's app volume can take place.
+- Change the tag in your panel's image (i.e. to upgrade from **v1.11.5** to **v1.11.7**, you would change ``ghcr.io/blueprintframework/blueprint:v1.11.5`` to ``ghcr.io/blueprintframework/blueprint:v1.11.7``.
+- ```bash
+    docker compose pull
+  ```
+- ```bash
+    docker compose up -d
+  ```
+- If you want anything from your previous dev enviornment, ``cp -r webroot.bak_$(date +%m-%d-%Y)/.blueprint/dev webroot/.blueprint/dev``
+- Lastly, install your extensions again. You can reinstall all of the extensions in your extensions folder with ``blueprint -i *.blueprint``.
+- If any of your extensions' settings are gone after this step, restore from your backup and ask the author of those extensions where persistent data is stored so you can back it up and restore it after each update.
 
 <!-- copyright footer -->
 <br/><br/>
