@@ -7,56 +7,107 @@ on:
       - 'Master'
     paths:
       - Dockerfile
+      - '.helpers/**'
+      - '.github/workflows/build.yml'
   schedule:
     - cron: '0 8 * * TUE'
 
+permissions:
+  contents: read
+  packages: write
+
+env:
+  LATEST_VERSION: v1.15.1.0
+  IMAGE_NAME: ghcr.io/lingyu-ily/blueprint-tc
+
+concurrency:
+  group: blueprint-docker-build
+  cancel-in-progress: false
+
 jobs:
-  build_and_push:
-    name: Build and Push Docker Image
-    runs-on: ubuntu-latest
-    env:
-      LATEST_VERSION: v1.15.1.0 # Determines :latest tag
+  build:
+    name: Build ${{ matrix.version }} (${{ matrix.arch.name }})
     strategy:
       fail-fast: false
       matrix:
         version:
           - v1.14.1.0
           - v1.15.1.0
+        arch:
+          - name: amd64
+            platform: linux/amd64
+            runner: ubuntu-24.04
+          - name: arm64
+            platform: linux/arm64
+            runner: ubuntu-24.04-arm
+
+    runs-on: ${{ matrix.arch.runner }}
+
     steps:
       - name: Checkout code
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
 
       - name: Set up Docker Buildx
-        uses: docker/setup-buildx-action@v3
-
-      - name: Set up QEMU
-        uses: docker/setup-qemu-action@v3
+        uses: docker/setup-buildx-action@v4
 
       - name: Login to GitHub Container Registry
-        uses: docker/login-action@v3
+        uses: docker/login-action@v4
         with:
           registry: ghcr.io
           username: ${{ github.repository_owner }}
           password: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: Prepare tags
-        id: prep_tags
-        shell: bash
-        run: |
-          if [[ "${{ matrix.version }}" == "${{ env.LATEST_VERSION }}" ]]; then
-            TAGS="ghcr.io/lingyu-ily/blueprint-tc:latest,ghcr.io/lingyu-ily/blueprint-tc:${{ matrix.version }}"
-          else
-            TAGS="ghcr.io/lingyu-ily/blueprint-tc:${{ matrix.version }}"
-          fi
-          echo "VERSION_TAG=${{ matrix.version }}" >> $GITHUB_ENV
-          echo "TAGS=$TAGS" >> $GITHUB_ENV
-
-      - name: Build and Push Docker Image
-        uses: docker/build-push-action@v5
+      - name: Build and Push ${{ matrix.version }} (${{ matrix.arch.name }})
+        uses: docker/build-push-action@v7
         with:
           context: .
           file: ./Dockerfile
-          platforms: linux/amd64,linux/arm64
+          platforms: ${{ matrix.arch.platform }}
           push: true
-          tags: ${{ env.TAGS }}
-          build-args: VERSION_TAG=${{ env.VERSION_TAG }}
+          tags: ${{ env.IMAGE_NAME }}:build-${{ matrix.version }}-${{ matrix.arch.name }}
+          build-args: |
+            VERSION_TAG=${{ matrix.version }}
+
+  manifest:
+    name: Create Multi-Arch Manifest (${{ matrix.version }})
+    needs: build
+    runs-on: ubuntu-24.04
+
+    strategy:
+      fail-fast: false
+      matrix:
+        version:
+          - v1.14.1.0
+          - v1.15.1.0
+
+    steps:
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v4
+
+      - name: Login to GitHub Container Registry
+        uses: docker/login-action@v4
+        with:
+          registry: ghcr.io
+          username: ${{ github.repository_owner }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Create multi-arch manifest
+        shell: bash
+        env:
+          VERSION: ${{ matrix.version }}
+        run: |
+          AMD64_IMAGE="${IMAGE_NAME}:build-${VERSION}-amd64"
+          ARM64_IMAGE="${IMAGE_NAME}:build-${VERSION}-arm64"
+
+          if [[ "$VERSION" == "$LATEST_VERSION" ]]; then
+            docker buildx imagetools create               -t "${IMAGE_NAME}:${VERSION}"               -t "${IMAGE_NAME}:latest"               "$AMD64_IMAGE"               "$ARM64_IMAGE"
+          else
+            docker buildx imagetools create               -t "${IMAGE_NAME}:${VERSION}"               "$AMD64_IMAGE"               "$ARM64_IMAGE"
+          fi
+
+      - name: Inspect multi-arch image
+        shell: bash
+        env:
+          VERSION: ${{ matrix.version }}
+        run: |
+          docker buildx imagetools inspect "${IMAGE_NAME}:${VERSION}"
